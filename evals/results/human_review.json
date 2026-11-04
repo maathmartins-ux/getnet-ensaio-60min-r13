@@ -1,0 +1,35 @@
+{
+ "rotulos": 9,
+ "humano_passa": 9,
+ "automatico_passa": 9,
+ "concordancia": 1.0,
+ "kappa": null,
+ "divergencias": [],
+ "rotuladores": 1,
+ "por_rotulador": {
+  "matheus": {
+   "rotulos": 9,
+   "concordancia": 1.0,
+   "kappa": null,
+   "heldout": null
+  }
+ },
+ "heldout": null,
+ "entre_humanos": null,
+ "juiz_x_humano": null,
+ "adulteradas": null,
+ "bateria": {
+  "regra": "rótulo de pessoa só se compara com veredito do juiz, checagem ou outra pessoa sobre o MESMO texto: o da página congelada (evals/validation/<amostra>.json) ou, sem ela, a resposta de hoje em evals/results; rótulo de outro texto sai de toda conta e é listado",
+  "rotulos_por_bateria": {
+   "03c469a-dirty": 9
+  },
+  "de_pagina_congelada": 9,
+  "do_texto_de_hoje": 0,
+  "paginas": [
+   "5b1825227718"
+  ]
+ },
+ "rotulos_de_outra_bateria": null,
+ "aviso_juiz": null,
+ "aviso": "só 9 rótulos: abaixo de 20 não dá para confiar"
+}
