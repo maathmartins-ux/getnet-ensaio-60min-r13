@@ -7,7 +7,7 @@ Atendimento multiagente para lojistas da Getnet: um Router lê cada mensagem (pt
 |---|---|
 | Rodar | `docker compose up -d --build` → `http://localhost:8000/docs` · console do operador em `/operator` |
 | Testar | `python scripts/check.py --docker --scale` (lint, testes, eval com gate, build, imagem sem extras, smoke do container, 2 réplicas atrás de balanceador) |
-| CI | [GitHub Actions](../../actions/workflows/ci.yml) |
+| CI | [GitHub Actions](../../actions/workflows/ci.yml) (o último commit é só o README; o código é o do commit anterior) |
 <!-- links:end -->
 
 O que o enunciado pede que o README cubra → onde: build, configure, run and test (§1) · orchestration architecture
@@ -24,8 +24,16 @@ tabelas completas, em [docs/RESULTS.md](docs/RESULTS.md); o que veio do kit, em 
 <!-- scorecard:begin -->
 | medida | valor | como se mede |
 |---|---:|---|
-
-Não medido nesta entrega: Oficiais resolvidas (sem humano + todo fato + fonte); Oficiais resolvidas: pass^k (todas as rodadas); Juiz: respostas oficiais fundamentadas; Juiz: respostas oficiais úteis (helpful); Memória ao vivo: pass@1; Humano no laço: resposta do operador no mesmo turno (split hitl); Busca: Recall@3; Busca: MRR; Turnos resolvidos sem humano (ao vivo, todos os splits); Custo por turno resolvido sem humano (ao vivo).
+| Oficiais resolvidas (sem humano + todo fato + fonte + juiz: fundamentada) | 1.00 | resposta sem humano, com todo fato de referência do cenário, com fonte e que o juiz diz fundamentada (os 10 do enunciado; a regex sozinha não basta) |
+| Oficiais resolvidas: pass^k (todas as rodadas, com o juiz) | 1.00 | o mesmo, em todas as rodadas de cada cenário |
+| Juiz: respostas oficiais fundamentadas | 1.00 | juiz LLM com o texto das fontes: cada afirmação apoiada nelas |
+| Juiz: respostas oficiais úteis (helpful) | 1.00 | juiz LLM: a resposta resolve o que o lojista perguntou |
+| Memória ao vivo: pass@1 | 0.81 | conversas de vários turnos: o fato do turno anterior chega à resposta |
+| Humano no laço: resposta do operador no mesmo turno (split hitl) | 1.00 | operadora simulada responde o caso aberto no turno dentro da espera: a resposta dela e os passos pendentes saem no mesmo turno (a que chega depois vai pela retomada, uma vez só) |
+| Busca: Recall@3 | 0.89 | perguntas rotuladas olhando a fonte: a página certa entre as 3 primeiras |
+| Busca: MRR | 0.89 | posição média da primeira página certa (1 = sempre em primeiro) |
+| Turnos resolvidos sem humano (ao vivo, todos os splits) | 0.78 | todas as execuções ao vivo, de todos os splits: resposta sem pedir humano, sem erro e, se julgada, fundamentada pelo juiz (recusa do guardrail conta; o fato se confere só nas oficiais resolvidas) |
+| Custo por turno resolvido sem humano (ao vivo) | US$ 0.0303 | gasto ao vivo de todos os splits (inclusive turnos que foram ao humano e turnos anteriores das conversas) ÷ as execuções resolvidas da linha acima |
 <!-- scorecard:end -->
 
 ### 0.1 Mapeamento do desafio
@@ -75,10 +83,10 @@ curl -s -X POST localhost:8000/auth/logout -H "Authorization: Bearer $TOKEN"   #
 
 <!-- quickstart:begin -->
 ```bash
-# 1º caso oficial (official-01, evals/cases.jsonl), como o cliente u1, com o $TOKEN do passo Entrar
-# (atalho de teste, sem senha: TOKEN=$(docker compose exec -T api python -m app.auth u1))
+# 1º caso oficial (official-01, evals/cases.jsonl), como o cliente cliente1988, com o $TOKEN do passo Entrar
+# (atalho de teste, sem senha: TOKEN=$(docker compose exec -T api python -m app.auth cliente1988))
 curl -s -X POST localhost:8000/chat -H "Authorization: Bearer $TOKEN" \
-     -H "Content-Type: application/json" -d '{"message": "Qual o prazo de entrega para São Paulo?"}'
+     -H "Content-Type: application/json" -d '{"message": "What'\''s the difference between the Get Clássica and the Get Smart?"}'
 ```
 <!-- quickstart:end -->
 
@@ -161,7 +169,7 @@ No desafio Getnet a divisão ganha um 4º especialista, `general` (tools `weathe
 - **Storage**: trechos em JSONL versionado em `data/` (id, URL, `fetched_at`, sha256); vetores do denso em cache no
   disco.
 <!-- retriever:begin -->
-- **Retrieval** (`src/app/rag.py`; frase gerada de `KIT_RETRIEVER` por `scripts/fill_readme.py`): `dense+cross:base`: denso `multilingual-e5-large` + cross-encoder `bge-reranker-v2-m3-int8` (top-10, 600 caracteres por trecho) — ordem do denso; nota do cross só no portão sem fonte: o redator lê os trechos na ordem do denso. Padrão do kit (`KIT_RETRIEVER` em `src/app/config.py`), sem medida no domínio: `run_evals --choose-retriever --apply` mede e grava `data/retriever.json`.
+- **Retrieval** (`src/app/rag.py`; frase gerada de `KIT_RETRIEVER` por `scripts/fill_readme.py`): `dense+windows+cross:base`: denso `multilingual-e5-large` + cross-encoder `bge-reranker-v2-m3-int8` (top-10, 600 caracteres por trecho) — ordem do denso; nota do cross só no portão sem fonte: o redator lê os trechos na ordem do denso. Padrão do kit (`KIT_RETRIEVER` em `src/app/config.py`), sem medida no domínio: `run_evals --choose-retriever --apply` mede e grava a escolha em data/retriever.json.
 <!-- retriever:end -->
 - **Busca no caminho do agente:** a 1ª busca usa as palavras do cliente e a pergunta reescrita pelo router entra
   junto; as buscas do plano rodam em paralelo (`FAQ_SEARCH_PARALLEL`) e, quando o plano gasta o teto, o redator
@@ -311,7 +319,7 @@ conta como **resolvida** sem humano, com todo fato de referência e com fonte.
   cassete para o replay no CI (`--replay`, piso = taxas da gravação aceita).
 - **Humano**: análise de erros em ~60 traces reais (rascunho do modelo, edições do dono contadas, um modo de falha
   por checagem) e held-out cego rotulado na página (passa/falha ponta a ponta; a intenção é diagnóstico).
-  {{o que rodou no relógio e o que não rodou}}
+  No relógio rodaram: suíte offline, gate do eval, fumaça ao vivo dos oficiais e UMA bateria ao vivo integral (13 splits, oficiais e memória com 3 repetições, juiz no mesmo processo) mais a ablação do replanejamento nas perguntas reais. Não rodaram: rodada 2 depois das correções, `check.py --docker --scale` no código final (a imagem foi aquecida antes) e o vídeo.
 
 ## 7. Perguntas da entrevista, respondidas
 
@@ -319,10 +327,13 @@ As perguntas que uma entrevista técnica faria, respondidas com o número medido
 
 | Pergunta | Resposta curta | Onde está a prova |
 |---|---|---|
-| Quais respostas oficiais o juiz reprova, e por quê, se intenção e ferramentas acertam? | {{causas por caso, antes × depois}} | `docs/JUDGE_DIFF.md` |
-| Onde a memória perde informação? | {{memória × roteamento, separados}} | §0 e `docs/RESULTS.md` |
-| Quanto do kit foi escrito depois das correções anteriores? | {{resposta direta, com a tabela do git}} | `docs/PROCEDENCIA.md` |
-| Como medir o ganho do replanejamento em perguntas reais? | {{split de perguntas reais de lojistas, com e sem}} | `evals/results/ablation_replan*.json` |
+| Onde a memória perde informação? | no split `memory` ao vivo (`evals/results/live_memory.json`) o fato do turno anterior chega à resposta em 93,8% das execuções, mas a intenção acerta 87,5%: a perda é de rota (seguimentos curtos de dado do cliente, `memory-13` e `memory-14` em `docs/FAILURE_MODES.md`) e de um caso entre conversas (`memory-16`), não de memória | §0 e `docs/RESULTS.md` |
+| Quanto do kit foi escrito depois das correções anteriores? | o motor, o eval e os scripts vieram do kit; o domínio (corpus, tools, regras, prompts, casos, gold) foi escrito no relógio — tabela em `docs/PROCEDENCIA.md` | `docs/PROCEDENCIA.md` |
+| Como medir o ganho do replanejamento em perguntas reais? | 40 perguntas reais com link rodaram com e sem o achado `needs` no mesmo commit (`evals/results/live_real.json` × `evals/results/ablation_replan_no_needs_live.json`); o juiz julgou o braço com `needs` | `evals/results/ablation_replan*.json` |
+
+<!-- sem-prova:begin (prova inexistente nesta entrega; a linha volta quando existir)
+| Quais respostas oficiais o juiz reprova, e por quê, se intenção e ferramentas acertam? | na rodada 1 o juiz aprovou as 30 execuções oficiais (fundamentadas e úteis); fora dos oficiais reprovou `dependent-09` e `q-offvar-06-pt` (`docs/FAILURE_MODES.md`); sem rodada 2, não há antes × depois | `docs/JUDGE_DIFF.md` |
+sem-prova:end -->
 
 ## 8. Procedência e linha do tempo
 
@@ -338,28 +349,16 @@ e como comparar pela primeira entrega.
 <!-- timeline:begin -->
 | hora (UTC; Brasília = UTC−3) | min | commit |
 |---|---:|---|
-| 14:07:00 | 0 | chore: scaffold from entregar-desafio-cronometrado kit v3.6.0 |
-| 10:02:26 | 2455 | evals: linha grava context (evidência + cartão, com teto) e a checagem claims |
-| 10:04:28 | 2457 | evals: réplica offline da checagem de frases sobre as 30 respostas oficiais da v4 |
-| 12:25:09 | 2598 | evals: buscador aquecido antes do 1º caso, como a API faz (frio, a carga do denso estourava o NODE_TIMEOUT e o official-01 ia ao humano) |
-| 12:32:21 | 2605 | evals: calibração do portão sobre o BM25 quando é ele que confere a cobertura (sobre o denso dava MIN_SCORE = 0 e replan 0% de handoff) |
-| 13:29:58 | 2663 | eval ao vivo: splits num processo só (run_evals --live --splits), live_eval.sh/.ps1 sem um processo por split |
-| 16:27:32 | 2841 | evals: gold de passagens essenciais rotulado às cegas por 2 rotuladores (export sem ordem da busca, import com consenso e concordância); PROMPTS da K usa |
-| 19:24:46 | 3018 | preflight: confere ramo padrão main e kit-fonte consumido antes de mexer em qualquer arquivo |
-| 22:12:17 | 3185 | eval ao vivo: teto de casos simultâneos no processo (LIVE_MAX_CONCURRENT=12) — 44 conversas ao mesmo tempo estouraram o timeout do faq |
-| 12:21:07 | 4034 | eval: apaga os bancos temporários de cada caso no fim (inclusive em aborto) — 13.395 pastas eval-* (18 GB) encheram o disco da nuvem e derrubaram uma bateria |
-| 15:39:15 | 4232 | eval: linha de red team offline diz informativo, não FAIL (o gate vale ao vivo/replay) |
-| 15:41:34 | 4235 | final.sh: commit final leva todos os arquivos que o fill_readme gera (PROCEDENCIA conta o git) |
-| 16:01:29 | 4254 | eval: cota de cada split pelo custo por caso medido (replan/dependent abortavam com a cota da memória) |
-| 17:53:27 | 4366 | eval: idioma do redator só conta com LLM (o modo offline cita a fonte sem traduzir) |
-| 17:56:41 | 4370 | eval: métrica sem valor não vira linha de traços; nota do idioma offline |
-| 18:23:25 | 4396 | eval ao vivo: cota medida tem piso nos turnos (rodada em timeout não encolhe a cota) |
-| 06:28:52 | 5122 | eval(kit): live_*.json grava a carga; trace_stats declara a carga do SLO e tira os bloqueios do guardrail |
-| 06:47:59 | 5141 | eval(kit): todo lote cego do held-out fica fora do gate de intenção pelo prefixo (heldout_h3) |
-| 07:39:51 | 5193 | eval(kit): ablação em commits com o mesmo código não sai como AVISO; o gold de busca citado é onde ele está (retrieval.d/) |
-| 08:15:02 | 5228 | docs(kit): rodada 11 no registro (8,92: 8,90 / 8,89 / 8,96, 3 réguas) |
+| 12:57:25 | -16 | chore: repositório (antes do relógio) |
+| 13:13:44 | 0 | chore: scaffold from entregar-desafio-cronometrado kit v5.4.0 |
+| 13:18:01 | 4 | spec: oficiais (10 cenários literais com expect.facts e expect.entities) |
+| 13:20:32 | 7 | spec: taxonomia, desempates, parcial, standalone, CRM e 62 casos (replan 20, dependent 10, parallel 5, approval 5, hitl 6, memory 16) |
+| 13:28:40 | 15 | spec: approval-05 com valor dentro do crédito a receber do CRM (R$ 400,00 ≤ R$ 630,00; antes a tool recusaria o valor e o caso não mediria a aprovação) |
+| 13:38:30 | 25 | eval: fumaça ao vivo dos 10 oficiais (repeat 1, complete, US$ 0,24, intent 10/10) |
+| 13:43:31 | 30 | eval: conferência humana às cegas da fumaça dos oficiais (1 rotulador: 9 respostas julgadas, 1 "não sei"; humano aprova 9/9, checagem automática 9/9, concordância 1,0; sem rodada de consenso) |
+| 14:01:06 | 47 | eval: rodada 1 ao vivo integral (13 splits complete; official resolvidas 30/30 pass^3; juiz; ablação no_needs no split real) + FAILURE_MODES, DEMO e fix-ci |
 
-Do primeiro ao último commit: **5228 min**, 400 commits (aqui os 20 marcos; todos em `docs/TIMESHEET.md`).
+Relógio: **47 min**, 59 commits (aqui os 8 marcos; todos em `docs/TIMESHEET.md`).
 <!-- timeline:end -->
 
 </details>
@@ -369,5 +368,5 @@ Do primeiro ao último commit: **5228 min**, 400 commits (aqui os 20 marcos; tod
 Cada limitação com o efeito que ela tem e o que faltaria para resolver:
 
 - **Dados do cliente e operador simulados:** o CRM (`data/crm/`) tem dois lojistas fictícios com datas relativas a hoje e dias úteis sem feriado; no eval a operadora é simulada (`evals/operator_sim.py`). Efeito: o Customer Support prova o fluxo, não a integração com o backend real da Getnet. Faltaria um adaptador para a API de recebíveis e terminais e a fila humana ligada ao atendimento real.
-- {{cada medida do §0 abaixo da referência ou não medida: o mecanismo, o número e o custo de corrigir}}
+- **Abaixo da referência:** memória ao vivo pass@1 0,81 (referência 0,85): o mecanismo é a rota do seguimento curto de dado do cliente (intenção 87,5% no split, memória 93,8%); corrigir pede exemplos de seguimento de estado no router e uma rodada ao vivo de memória (~US$ 2,3). Guardrail ao vivo: bloqueio certo em 87,5% dos 32 ataques, handoff certo em 66,7% (`evals/results/live_guardrail.json`). Avaliação humana com 1 rotulador e 9 respostas julgadas, sem consenso. Rodada 2 não medida.
 - **Fora desta entrega:** a central `get-ajuda` (índice montado por JavaScript) entrou só pelos artigos de erro de conexão; manuais em PDF das maquininhas não foram ingeridos; a rodada 2 ao vivo (depois das correções da rodada 1) não rodou no tempo, então não há antes × depois do juiz; a rotulagem humana teve 1 rotulador e nenhuma rodada de consenso; pedido de dado de outro lojista é barrado pelo guardrail antes da tool (mais estrito que a SPEC, que pedia "não encontrado"; 2 testes marcados `xfail` estrito em `tests/test_domain_guardrails.py`).

@@ -1,7 +1,7 @@
 # Procedência: o que veio do kit e o que foi feito no relógio
 
 Este documento existe para que a comparação com quem entregou uma vez só seja justa. Ele diz o que já estava
-pronto antes do relógio, de onde veio e o que os <!-- minutos:begin -->38<!-- minutos:end --> minutos medem.
+pronto antes do relógio, de onde veio e o que os <!-- minutos:begin -->47<!-- minutos:end --> minutos medem.
 
 ## 1. O kit e a sua história
 
@@ -58,7 +58,7 @@ correspondente no kit e se ela foi feita **antes** do relógio (kit) ou **no** r
 para medir as correções antes de usá-las; o resultado está no histórico do kit (`KIT_CHANGELOG.md`). Os números
 deste repositório vêm só das medidas feitas aqui, no relógio, sobre o corpus e os casos deste enunciado.
 
-## 2. O que os <!-- minutos:begin -->38<!-- minutos:end --> minutos medem, e o que não medem
+## 2. O que os <!-- minutos:begin -->47<!-- minutos:end --> minutos medem, e o que não medem
 
 - **Medem:** a especialização do kit para este enunciado, no relógio: spec, base de conhecimento, ferramentas do
   domínio, casos de avaliação (incluindo o held-out cego e as perguntas reais), prompts, regras do router e do
@@ -94,10 +94,11 @@ arquivos gerados, como `evals/results/`, ficam fora da conta):
 | `docker-compose.hardened.yml` | 54 | 0 | 0 | 0 |
 | `docker-compose.scale.yml` | 31 | 0 | 0 | 0 |
 | `docker-compose.yml` | 94 | 0 | 0 | 0 |
-| `docs` | 606 | 471 | 10 | 2 |
+| `docs` | 606 | 1134 | 17 | 5 |
 | `docs/adr` | 347 | 54 | 0 | 0 |
 | `evals` | 8792 | 210 | 34 | 5 |
 | `evals/cases.d` | 0 | 167 | 0 | 0 |
+| `evals/cassettes` | 0 | 2348 | 0 | 0 |
 | `evals/essential` | 0 | 1277 | 0 | 0 |
 | `evals/judge_calibration.d` | 0 | 46 | 0 | 0 |
 | `evals/proxy` | 286 | 0 | 0 | 0 |
@@ -106,6 +107,7 @@ arquivos gerados, como `evals/results/`, ficam fora da conta):
 | `evals/validation` | 0 | 710 | 0 | 0 |
 | `ops` | 808 | 0 | 0 | 0 |
 | `pyproject.toml` | 56 | 0 | 0 | 0 |
+| `reports` | 0 | 23 | 0 | 0 |
 | `requirements-dev.lock` | 252 | 0 | 0 | 0 |
 | `requirements-hybrid.lock` | 282 | 0 | 0 | 0 |
 | `requirements.lock` | 149 | 0 | 0 | 0 |
@@ -114,7 +116,7 @@ arquivos gerados, como `evals/results/`, ficam fora da conta):
 | `tests` | 22204 | 374 | 0 | 1 |
 | `tests/fixtures` | 77 | 0 | 0 | 0 |
 
-Total: **56250** linhas do kit (commit `21704d5`) e **4780** escritas no relógio (8% do total). Arquivos do kit alterados no relógio: 16. Fora da conta, por serem gerados: 48557 linhas em `evals/results/`.
+Total: **56250** linhas do kit (commit `21704d5`) e **7814** escritas no relógio (12% do total). Arquivos do kit alterados no relógio: 19. Fora da conta, por serem gerados: 146310 linhas em `evals/results/`.
 <!-- kit:end -->
 
 Linha do tempo commit a commit, com as tags `clock-start` e `clock-end`: [TIMESHEET.md](TIMESHEET.md).
