@@ -50,7 +50,8 @@ _ACTION = re.compile(r"\b(chamado|ticket)\b|\b(antecip\w*|advance)\b.*R\$\s*\d|R
 _TROUBLE = re.compile(
     r"n[aã]o (est[aá] )?(conect\w*|liga|funciona)|parou de conectar|perdeu a conex|sem (sinal|conex[aã]o|internet)"
     r"|offline|travou|travad\w*|\berro\b|recus\w*|negad\w*|won'?t connect|not connecting|no (signal|connection)"
-    r"|without (signal|connection|internet)|lost (its |the )?(internet|connection|signal)|declin\w*|rejected|error|frozen|not working|is down"
+    r"|without (signal|connection|internet)"
+    r"|lost (its |the )?(internet|connection|signal)|declin\w*|rejected|error|frozen|not working|is down"
     r"|\bc[oó]digo \d{2}\b|\bcode \d{2}\b", re.IGNORECASE)
 # Como consertar (lado "o que faço?" de um sintoma).
 _FIX = re.compile(r"\b(resolv\w*|consert\w*|o que (eu )?(fa[cç]o|devo fazer|posso fazer)|passo a passo|fix|steps"
