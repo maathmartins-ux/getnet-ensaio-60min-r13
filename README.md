@@ -320,7 +320,6 @@ As perguntas que uma entrevista técnica faria, respondidas com o número medido
 | Pergunta | Resposta curta | Onde está a prova |
 |---|---|---|
 | Quais respostas oficiais o juiz reprova, e por quê, se intenção e ferramentas acertam? | {{causas por caso, antes × depois}} | `docs/JUDGE_DIFF.md` |
-| O rerank tem ganho medido? Por que está (ou não) no caminho? | {{tabela bm25 × híbrido × rerank, latência}} | `evals/results/retrieval_compare.json` |
 | Onde a memória perde informação? | {{memória × roteamento, separados}} | §0 e `docs/RESULTS.md` |
 | Quanto do kit foi escrito depois das correções anteriores? | {{resposta direta, com a tabela do git}} | `docs/PROCEDENCIA.md` |
 | Como medir o ganho do replanejamento em perguntas reais? | {{split de perguntas reais de lojistas, com e sem}} | `evals/results/ablation_replan*.json` |
@@ -369,6 +368,6 @@ Do primeiro ao último commit: **5228 min**, 400 commits (aqui os 20 marcos; tod
 
 Cada limitação com o efeito que ela tem e o que faltaria para resolver:
 
-- {{o que é simulado (dados do cliente, operador), o efeito e o que faltaria}}
+- **Dados do cliente e operador simulados:** o CRM (`data/crm/`) tem dois lojistas fictícios com datas relativas a hoje e dias úteis sem feriado; no eval a operadora é simulada (`evals/operator_sim.py`). Efeito: o Customer Support prova o fluxo, não a integração com o backend real da Getnet. Faltaria um adaptador para a API de recebíveis e terminais e a fila humana ligada ao atendimento real.
 - {{cada medida do §0 abaixo da referência ou não medida: o mecanismo, o número e o custo de corrigir}}
-- {{o que ficou de fora e por quê; o que não rodou no relógio}}
+- **Fora desta entrega:** a central `get-ajuda` (índice montado por JavaScript) entrou só pelos artigos de erro de conexão; manuais em PDF das maquininhas não foram ingeridos; a rodada 2 ao vivo (depois das correções da rodada 1) não rodou no tempo, então não há antes × depois do juiz; a rotulagem humana teve 1 rotulador e nenhuma rodada de consenso; pedido de dado de outro lojista é barrado pelo guardrail antes da tool (mais estrito que a SPEC, que pedia "não encontrado"; 2 testes marcados `xfail` estrito em `tests/test_domain_guardrails.py`).
