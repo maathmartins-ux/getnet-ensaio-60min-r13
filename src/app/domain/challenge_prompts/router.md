@@ -11,7 +11,7 @@ humano); "a outra" = a entidade da mesma lista que a última resposta NÃO trato
 dessa entidade, como apareceu na conversa.
 search_queries: as buscas na base de conhecimento, no idioma da base e com os termos que o site usaria (não traduza
 palavra por palavra): uma por produto ou item quando a pergunta compara ou lista vários (até 3), uma só nos outros
-casos, [] quando a pergunta não precisa da base. Ex.: "What's the difference between X and Y?" → ["X características
+casos, [] quando a pergunta não precisa da base. Ex.: "X ou Y, qual escolho?" → ["X características
 e diferenças", "Y características e diferenças"]. Mesma regra: nada de id, valor ou data que não esteja na mensagem.
 
 intents:
