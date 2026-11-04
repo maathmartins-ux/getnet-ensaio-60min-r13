@@ -1,11 +1,11 @@
 # Procedência: o que veio do kit e o que foi feito no relógio
 
 Este documento existe para que a comparação com quem entregou uma vez só seja justa. Ele diz o que já estava
-pronto antes do relógio, de onde veio e o que os <!-- minutos:begin --><!-- minutos:end --> minutos medem.
+pronto antes do relógio, de onde veio e o que os <!-- minutos:begin -->38<!-- minutos:end --> minutos medem.
 
 ## 1. O kit e a sua história
 
-O primeiro commit (`chore: scaffold from entregar-desafio-cronometrado kit ...`, versão <!-- versao:begin --><!-- versao:end -->)
+O primeiro commit (`chore: scaffold from entregar-desafio-cronometrado kit ...`, versão <!-- versao:begin -->v5.4.0<!-- versao:end -->)
 traz um kit próprio, mantido entre as tentativas deste mesmo desafio. **O kit evoluiu a partir das correções das entregas anteriores.** Cada
 versão absorveu os gaps apontados na correção da tentativa anterior:
 
@@ -13,9 +13,9 @@ versão absorveu os gaps apontados na correção da tentativa anterior:
 |---|---|---:|---|
 | v1 | sem kit | 7,1 | — |
 | v2 | v2.0.0 | 8,2 | token sem expiração, operador com token compartilhado, HITL sem retomada (→ v3.7.0) |
-| v4 | v3.7.0 | 8,5 | groundedness 60%, busca fraca, memória 54%, humano sem continuar o plano, avaliação de um rotulador só (→ <!-- versao:begin --><!-- versao:end -->) |
-| v5 | v5.1.0 | não enviada (tentativa cronometrada medida pelo próprio autor) | 2 cenários oficiais sem resposta, escaladas a mais, intenção do held-out 67,5%, memória 0,72, juiz cortado (→ <!-- versao:begin --><!-- versao:end -->) |
-| **esta entrega** | **<!-- versao:begin --><!-- versao:end -->** | — | — |
+| v4 | v3.7.0 | 8,5 | groundedness 60%, busca fraca, memória 54%, humano sem continuar o plano, avaliação de um rotulador só (→ <!-- versao:begin -->v5.4.0<!-- versao:end -->) |
+| v5 | v5.1.0 | não enviada (tentativa cronometrada medida pelo próprio autor) | 2 cenários oficiais sem resposta, escaladas a mais, intenção do held-out 67,5%, memória 0,72, juiz cortado (→ <!-- versao:begin -->v5.4.0<!-- versao:end -->) |
+| **esta entrega** | **<!-- versao:begin -->v5.4.0<!-- versao:end -->** | — | — |
 
 O registro completo do que mudou em cada versão, com a causa medida, está em
 [KIT_CHANGELOG.md](KIT_CHANGELOG.md), gerado do histórico do kit por `scripts/kit_history.py` (versões, o que
@@ -23,7 +23,7 @@ cada uma mudou e por quê, ideias de terceiros com a origem).
 
 **Ideias de soluções públicas.** Algumas ideias do kit vieram da leitura de soluções públicas deste desafio (lista em
 [KIT_CHANGELOG.md](KIT_CHANGELOG.md), seção de referências): replanejamento medido com e sem, retomada do plano após o
-humano, juiz com canários. Na versão <!-- versao:begin --><!-- versao:end -->, do desenho de duas entregas públicas:
+humano, juiz com canários. Na versão <!-- versao:begin -->v5.4.0<!-- versao:end -->, do desenho de duas entregas públicas:
 
 - **farrulla-darze/skywalker:** o router como único leitor do histórico, com especialistas sem estado que recebem a
   pergunta reescrita; busca como ação do especialista, com uma busca por item comparado; corpus com a página de cada
@@ -58,7 +58,7 @@ correspondente no kit e se ela foi feita **antes** do relógio (kit) ou **no** r
 para medir as correções antes de usá-las; o resultado está no histórico do kit (`KIT_CHANGELOG.md`). Os números
 deste repositório vêm só das medidas feitas aqui, no relógio, sobre o corpus e os casos deste enunciado.
 
-## 2. O que os <!-- minutos:begin --><!-- minutos:end --> minutos medem, e o que não medem
+## 2. O que os <!-- minutos:begin -->38<!-- minutos:end --> minutos medem, e o que não medem
 
 - **Medem:** a especialização do kit para este enunciado, no relógio: spec, base de conhecimento, ferramentas do
   domínio, casos de avaliação (incluindo o held-out cego e as perguntas reais), prompts, regras do router e do
@@ -73,6 +73,48 @@ Linhas do kit no commit de scaffold × linhas escritas no relógio, por pasta (g
 arquivos gerados, como `evals/results/`, ficam fora da conta):
 
 <!-- kit:begin -->
+| pasta | linhas do kit | + no relógio | − no relógio | arquivos do kit alterados |
+|---|---:|---:|---:|---:|
+| `.claude` | 121 | 0 | 0 | 0 |
+| `.dockerignore` | 15 | 0 | 0 | 0 |
+| `.env.example` | 60 | 0 | 0 | 0 |
+| `.github` | 174 | 7 | 0 | 1 |
+| `.gitignore` | 8 | 0 | 0 | 0 |
+| `.gitleaks.toml` | 16 | 0 | 0 | 0 |
+| `.trivyignore` | 8 | 0 | 0 | 0 |
+| `Dockerfile` | 74 | 0 | 0 | 0 |
+| `Makefile` | 38 | 0 | 0 | 0 |
+| `OWNERSHIP.json` | 89 | 0 | 0 | 0 |
+| `README.md` | 375 | 11 | 13 | 1 |
+| `data` | 34 | 55 | 32 | 4 |
+| `data/crm` | 0 | 33 | 0 | 0 |
+| `data/intent_examples.d` | 0 | 18 | 0 | 0 |
+| `data/knowledge` | 0 | 272 | 0 | 0 |
+| `docker-compose.demo.yml` | 10 | 0 | 0 | 0 |
+| `docker-compose.hardened.yml` | 54 | 0 | 0 | 0 |
+| `docker-compose.scale.yml` | 31 | 0 | 0 | 0 |
+| `docker-compose.yml` | 94 | 0 | 0 | 0 |
+| `docs` | 606 | 471 | 10 | 2 |
+| `docs/adr` | 347 | 54 | 0 | 0 |
+| `evals` | 8792 | 210 | 34 | 5 |
+| `evals/cases.d` | 0 | 167 | 0 | 0 |
+| `evals/essential` | 0 | 1277 | 0 | 0 |
+| `evals/judge_calibration.d` | 0 | 46 | 0 | 0 |
+| `evals/proxy` | 286 | 0 | 0 | 0 |
+| `evals/retrieval.d` | 0 | 66 | 0 | 0 |
+| `evals/retrieval.drafts` | 0 | 55 | 0 | 0 |
+| `evals/validation` | 0 | 710 | 0 | 0 |
+| `ops` | 808 | 0 | 0 | 0 |
+| `pyproject.toml` | 56 | 0 | 0 | 0 |
+| `requirements-dev.lock` | 252 | 0 | 0 | 0 |
+| `requirements-hybrid.lock` | 282 | 0 | 0 | 0 |
+| `requirements.lock` | 149 | 0 | 0 | 0 |
+| `scripts` | 6658 | 0 | 186 | 2 |
+| `src/app` | 14532 | 954 | 0 | 0 |
+| `tests` | 22204 | 374 | 0 | 1 |
+| `tests/fixtures` | 77 | 0 | 0 | 0 |
+
+Total: **56250** linhas do kit (commit `21704d5`) e **4780** escritas no relógio (8% do total). Arquivos do kit alterados no relógio: 16. Fora da conta, por serem gerados: 48557 linhas em `evals/results/`.
 <!-- kit:end -->
 
 Linha do tempo commit a commit, com as tags `clock-start` e `clock-end`: [TIMESHEET.md](TIMESHEET.md).
