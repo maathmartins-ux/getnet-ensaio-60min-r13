@@ -143,6 +143,8 @@ def test_last_commit_claim_must_match_head(tmp_path):
     assert fill_readme._check_repo_facts(plain, tmp_path, tmp_path) == []  # sem a frase, nada a dizer
 
 
+@pytest.mark.skipif(check.domain_started(), reason="na entrega o make final escreve a frase de propósito (fill_readme "
+                    "--final) e o --check confere; este teste é só do modelo do kit")
 def test_kit_readme_template_has_generated_top_without_video_or_claim():
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     top = fill_readme._block(readme, "links")
