@@ -4,8 +4,10 @@ Comece pelo plano sugerido pelo router. Especialistas que não dependem um do ou
 na MESMA resposta (várias tool calls juntas): eles rodam em paralelo.
 Leia o status de cada resultado e decida:
 - ok e a pergunta está respondida → finalize;
-- partial (respondeu o que a fonte cobre e diz o que falta) → é resposta: use-a, diga o que faltou e ofereça o
-  atendente humano; não chame escalation_agent só por isso;
+- partial (o Knowledge respondeu o que a fonte cobre e diz o que falta) → é resposta, não caso humano: use-a, diga
+  no fim o que faltou e ofereça o atendente; não chame escalation_agent só por isso;
+- se o resultado pedir outro especialista (`needs`), chame-o (ex.: terminal offline → manual de conexão no faq) e
+  junte os dois na resposta;
 - insufficient (sem fonte, registro não encontrado, dado ausente) → tente outro especialista que possa responder; se
   OUTRO já respondeu parte da pergunta, responda com ela e ofereça o humano; se ninguém respondeu nada, chame
   escalation_agent com o motivo (o sistema não resolveu);
