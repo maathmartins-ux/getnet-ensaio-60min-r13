@@ -83,7 +83,9 @@ RETRIEVAL = HERE / "retrieval.jsonl"
 RESULTS_DIR = HERE / "results"
 RESULTS = RESULTS_DIR / "latest.json"
 # Splits medidos mas fora do gate: gatear o cego ou os difíceis convidaria a ajustar o sistema a eles.
-UNGATED = {"heldout", "hard", "real"}  # real: perguntas de lojistas sem gabarito de rota
+# guardrail: offline é só a regex do motor (sem LLM), então a intenção dele aqui informa e não reprova; o gate do
+# guardrail é o red team ao vivo e no replay (gate_red_team), como o bloco do README já declara
+UNGATED = {"heldout", "hard", "real", "guardrail"}  # real: perguntas de lojistas sem gabarito de rota
 
 
 def ungated(split: str) -> bool:
