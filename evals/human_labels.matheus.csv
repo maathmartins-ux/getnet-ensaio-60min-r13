@@ -1,0 +1,57 @@
+id,split,pergunta,resposta,fontes,ferramentas,humano,nota,tipo_falha,c1,c2,c3,selecao
+official-01,official,What's the difference between the Get Clássica and the Get Smart?,"You can control stock, take orders, close the bill, load a menu and issue invoices on it, and it can integrate with your business's system [1][4]. You don't need a separate computer or fiscal printer to ring up an order and issue the tax receipt [3]. Whether it prints the NF-e depends on the app you choose, and most apps available on it do issue NF-e [4].
+
+The Get Clássica is listed as a ""POS 3G + Wi-Fi"" card machine.
+
+I don't have the Get Clássica's features or specifications, so I can't give you a full side-by-side comparison. I can pass your question to a human agent if you'd like.",sup-get-smart-10 prod-get-classica-03 sup-get-smart-08 sup-get-smart-16 prod-todas-maquininhas-07,,,,,sim,naosei,sim,aleatoria
+official-02,official,What's the weather forecast in Porto Alegre tomorrow?,"Tomorrow (2026-11-05) in Porto Alegre, Open-Meteo forecasts a low of 17 °C and a high of 24 °C. The chance of rain is up to 43%, with drizzle.
+
+Source: https://open-meteo.com/",https://open-meteo.com/,weather_forecast,pass,,,sim,nao,sim,aleatoria
+official-03,official,When will the money from yesterday's sales be deposited?,"Yesterday's sales total R$ 695,50. Each payment method is deposited on a different date:
+
+- **Pix:** R$ 120,00, deposited on 03/11/2026.
+- **Debit:** R$ 95,50, deposited on 04/11/2026.
+- **Credit:** R$ 480,00, scheduled for 03/12/2026.
+
+So R$ 215,50 has already been deposited, and R$ 480,00 is still to be deposited. The sales date is 03/11/2026.",,get_settlements,pass,,,sim,nao,sim,aleatoria
+official-04,official,Do I need a bank account to receive my sales via Pix?,"Pix can be made through a checking account, a savings account or a prepaid payment account, between different banks [1]. On Getnet, you receive Pix by generating a QR Code on its capture methods: physical terminals, TEF Auttar and Ecommerce [5]. One passage mentions Pix received in a ""Get Conta"", in the context of a MED block [4].
+
+The sources don't say whether you need a bank account, or a Get Conta, to receive your sales via Pix. I can pass your question to a human agent if you want.",sup-duvidas-57 sup-pix-mais-respostas-18 prod-pix-02 sup-pix-mais-respostas-24 sup-duvidas-82 prod-pix-01,,pass,,,sim,nao,sim,aleatoria
+official-05,official,"My card machine won't connect to the internet, what should I do?","Your machine T1988B (Get Clássica) is offline. It's on chip with no signal, and its last contact was 04/11/2026 at 05:35, about 5 hours ago. Your other machine, T1988A (Get Smart), is online on Wi-Fi with good signal.
+
+To check the chip on T1988B [1]:
+- With the machine off, open the back cover. Insert the chip in the slot marked SIM1 or SIM2, with the metal side facing down.
+- Close the cover, turn the machine on and wait for it to connect to the data network.
+- When it shows a connected network (2G or 3G), it is ready to use.
+- Then run a communication test to check that the chip is connected.
+
+I can propose a support ticket for T1988B with the reason ""no signal"". It stays proposed until you confirm, nothing is opened before then, and the proposal expires after 15 minutes. Do you want me to propose it?
+
+The sources I found don't cover Wi-Fi setup, restarting the machine, or the steps for the communication test.",sup-duvidas-05 prod-todas-maquininhas-04 prod-crediario-08 prod-todas-maquininhas-01 sup-pix-09,get_terminals,pass,,,sim,nao,sim,aleatoria
+official-06,official,How does receivables advance (antecipação) work with Getnet?,"Getnet lets you choose when you receive credit sales, and you can ask to advance credit receivables. Here is what the sources cover:
+
+- **Receiving schedule:** Debit sales are available the next day. For credit sales, you can receive everything in 2 days, in 30 days, or month by month according to the card installments [4].
+- **Automatic Advance:** This is a condition for the exemption for customers on the ""Receba Conforme suas Vendas"" plan. It goes through credit approval, and Getnet assesses each contract individually [2].
+- **Regulation:** Central Bank Resolution 4.734 and Circular 3.952 took effect on June 7, 2021. They let merchants use card receivables in credit operations with authorized institutions. The acquirer registers the receivables with a registrar so they can be traded [3].
+- **Lien (gravame):** If you take a loan, the lien is your guarantee to Getnet. You then receive all your sales, from Getnet and other acquirers, in your Get Conta, up to the outstanding balance of the loan [1].
+- **E-commerce:** Advances on e-commerce sales are blocked for 6 months. Physical sales can still be advanced normally [5].
+- **Requesting an advance:** I can propose an advance on your credit receivables for an amount you choose. It only runs after you confirm and a human agent approves it.
+
+The sources don't give the advance fee or the exact step-by-step process. I can pass you to a human agent for those details.",sup-antecipacao-de-vendas-05 sup-duvidas-100 sup-antecipacao-de-vendas-08 sup-antecipacao-de-vendas-13 sup-link-de-pagamento-12,,pass,,,sim,nao,sim,aleatoria
+official-07,official,What's the euro exchange rate today?,"Today's euro rate (04/11/2026), from the Banco Central do Brasil PTAX opening bulletin, is R$ 6.1567 for buying and R$ 6.1585 for selling.
+
+Source: https://www.bcb.gov.br/estabilidadefinanceira/historicocotacoes",https://www.bcb.gov.br/estabilidadefinanceira/historicocotacoes,currency_rate,pass,,,sim,nao,sim,aleatoria
+official-08,official,My card machine is showing a transaction decline error.,"Today there were 2 declines, both on terminal T1988A.
+
+- **TX1007** (10:05, credit, R$ 210,00): code 51 means insufficient balance or credit limit. The buyer should contact the card issuer or pay with another card or Pix.
+- **TX1008** (10:40, debit, R$ 75,00): code 05 means not authorized by the issuer. The buyer should contact their bank. Retrying will not help.
+
+The declines total R$ 285,00. Over the last 30 days you also had 6 approved sales, totaling R$ 995,40.
+
+T1988A is online on Wi-Fi with good signal. T1988B is offline with no signal and has been for 5 hours. I couldn't find a connection troubleshooting guide for it in the knowledge base.
+
+I can propose a support ticket for T1988B for ""no signal"". Nothing is opened until you confirm it. Do you want me to propose it, or would you rather talk to a human agent?",sup-duvidas-67 sup-erro-adq-1-87-01 sup-operacional-04 prod-todas-maquininhas-08 prod-crediario-08,get_transactions get_terminals,pass,,,sim,nao,sim,aleatoria
+official-09,official,How many installments can I split a sale into with the crediário?,"You can split a sale into up to 48 installments with the Crediário on a credit card [1][5]. The actual limit depends on the card issuer, which sets it under its own credit policies [3]. Interest rates can also vary by issuer [1].
+
+To check the interest and final amount, run a simulation on the terminal. Insert the card, enter the amount, then choose credit > crediário. You can print the simulation receipt if the terminal has paper. The simulation is for reference only. It is subject to credit analysis, and the issuer decides whether to approve the transaction [3].",prod-crediario-03 prod-crediario-05 sup-crediario-03 sup-parcelado-01 prod-crediario-01,,pass,,,sim,nao,sim,aleatoria
+official-10,official,Can I sell through WhatsApp using the Payment Link?,"Yes, you can sell through WhatsApp with the Payment Link. You send the link to your customers on WhatsApp, social networks, email or SMS. They click it, choose the payment method and complete the purchase [1]. Getnet's product page also lists selling through WhatsApp or a social network as a benefit [2].",sup-link-de-pagamento-12 prod-link-de-pagamento-01 prod-link-de-pagamento-02 sup-link-de-pagamento-10 sup-link-de-pagamento-07,,pass,,,sim,nao,sim,aleatoria
