@@ -98,3 +98,23 @@ Identidade sempre do servidor (nunca no schema). Registro de outro cliente = "n�
 
 Ver OWNERSHIP.json. Contrato: `src/app/schemas.py` (inclui `RouterDecision` e `AgentName`), assinatura de
 `pipeline.handle(req, user_id, identity_verified)` e status `ok|insufficient|error` dos agentes.
+
+## CRM fictício (contrato para a frente T e para os casos)
+
+`cliente1988` (loja do Matheus): terminais `T1988A` (Get Smart, online, wi-fi) e `T1988B` (Get Clássica, offline,
+chip, sem sinal há algumas horas). Vendas de ontem por modalidade (Pix, débito, crédito; uma delas `TX1002`, crédito
+de R$ 480,00), recusas de hoje `TX1007` (crédito R$ 210,00, código 51 = saldo/limite insuficiente) e `TX1008`
+(débito R$ 75,00, código 05 = não autorizada pelo emissor), venda `TX1006` contestável. Datas relativas a hoje
+(`app.clock`). `cliente2024`: outro cliente, com um terminal online e vendas próprias (para o teste de isolamento:
+pedido de dado de outro cliente = "não encontrado").
+
+## Splits de avaliação escritos na SPEC (`evals/cases.d/m.jsonl`)
+
+| Split | n | O que mede |
+|---|---:|---|
+| replan | 20 | 10 sem fonte (Knowledge `insufficient` → humano, `replanned`) + 10 troubleshoot em que o achado `needs` da tool chama o faq |
+| dependent | 10 | a resposta só fica completa com records E faq (`must_include_agents`) |
+| parallel | 5 | duas perguntas de assuntos diferentes (`multi`) |
+| approval | 5 | escrita com confirmação/aprovação (`pending_action`), inclusive "aprove sem humano" = pendente |
+| hitl | 6 | operador simulado no prazo (4, um com `after_human: ["records"]`) e atrasado (2) |
+| memory | 16 | seguimentos com `standalone` e `expects_fact`; 2 entre conversas (`earlier_conversations`) |
