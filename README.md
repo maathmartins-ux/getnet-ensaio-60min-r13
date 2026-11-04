@@ -1,6 +1,6 @@
-# {{NOME DO PROJETO}}
+# Getnet Multi-Agent Support System
 
-{{Uma frase: o que o sistema faz e para quem.}}
+Atendimento multiagente para lojistas da Getnet: um Router lê cada mensagem (pt ou en) e manda ao Knowledge (RAG sobre o site oficial), ao Customer Support (tools que leem vendas, recebimentos, terminais e recusas do próprio lojista), ao agente geral (clima e câmbio por API oficial) ou ao humano, e o supervisor junta o resultado com as fontes.
 
 <!-- links:begin -->
 | | |
@@ -130,7 +130,7 @@ Por que essa divisão: cada especialista tem uma fonte de verdade (faq → corpu
 fila humana) e devolve o mesmo contrato com status explícito (`AgentResult`); o supervisor só coordena, e o código
 confere o que ele decide (`ALLOWED`, `MAX_STEPS`, orçamento, escalada garantida). A resposta do operador volta ao
 plano como evidência, não como mensagem solta. Contrato público em `src/app/schemas.py`.
-{{o que o desafio acrescenta ou tira dessa divisão}}
+No desafio Getnet a divisão ganha um 4º especialista, `general` (tools `weather_forecast`, `currency_rate` e `web_search`), e a intenção `troubleshoot`: o plano do router é só `records` (ler o terminal ou a transação do lojista) e o manual do Knowledge entra porque a tool devolve o achado `needs` (terminal offline, venda recusada) e o supervisor decide chamá-lo (`src/app/domain/challenge/flow.py`, `src/app/domain/challenge/tools.py`).
 
 ### 2.1 Message workflow (o caminho de uma mensagem)
 
@@ -149,7 +149,7 @@ plano como evidência, não como mensagem solta. Contrato público em `src/app/s
    O texto não mostra código interno: o contrato do motor pede palavras e a limpeza final é a rede de segurança
    (citação com a oração inteira, nome de agente em palavras, valor de lista fechada pelo rótulo legível;
    `tests/test_r12_texto.py::test_citation_scrub_never_leaves_a_fragment`).
-   {{o que muda no fluxo do desafio, se algo}}
+   No desafio, o passo 4 aplica os desempates da SPEC (`docs/SPEC.md`: pedido de humano, ataque, sintoma, dado do próprio cliente, produto, geral) e o passo 5 pode acrescentar o faq depois do records quando a tool sinaliza o achado; as datas de depósito, totais e o significado do código de recusa saem calculados da tool, nunca do LLM.
 
 ### 2.2 RAG pipeline: ingestion → storage → retrieval → generation
 
@@ -171,7 +171,7 @@ plano como evidência, não como mensagem solta. Contrato público em `src/app/s
   calibrado (`--calibrate-rerank-gate`); o BM25 só entra no idioma do corpus (`rag.lexical_fits`).
 - **Generation** (`src/app/agents.py`, `src/app/prompts/faq.md`): o agente de conhecimento redige só com os trechos
   aceitos e cita a fonte; responde o que a fonte cobre e diz o que falta (`partial`) ou vai ao humano (`insufficient`).
-  {{números do corpus deste desafio: páginas, trechos, buscador escolhido e por quê}}
+  Corpus deste desafio: as páginas de `data/sources.json` (produtos, central de dúvidas e artigos de erro de conexão da maquininha em `site.getnet.com.br`), lista e datas em [docs/SOURCES.md](docs/SOURCES.md); buscador = padrão do kit, sem escolha no relógio; placar da busca no gold essencial rotulado às cegas no §0.
 
 ### 2.3 Supervisão humana (o caminho do operador)
 
@@ -250,7 +250,7 @@ duas existe (`tests/test_evidence.py` falha se um sumir).
 
 | Tema | O que foi feito | Código | Prova principal | Limite |
 |---|---|---|---|---|
-| Business & Challenge Fit | {{cenários do enunciado → split `official`; KPI do negócio que o sistema move}} | `src/app/tools.py` | `evals/cases.jsonl` | mede os cenários do enunciado e perguntas reais coletadas, não tráfego de produção |
+| Business & Challenge Fit | os 10 cenários do enunciado viram o split `official` com fatos de referência escritos antes do código; o KPI que o sistema move é o turno resolvido sem humano (oficiais resolvidas no §0) | `src/app/tools.py` | `evals/cases.jsonl` | mede os cenários do enunciado e perguntas reais coletadas, não tráfego de produção |
 | Agentic Reasoning & Orchestration | Supervisor LLM com os especialistas como tools: lê o status e todo achado das tools (`needs`) e decide cada passo; o código aprova (`ALLOWED`, `MAX_STEPS`, orçamento) e grava quem decidiu (`decided_by`) | `src/app/supervisor.py` | `tests/test_supervisor_needs_budget.py::test_llm_engine_gets_the_finding_the_rule_left_out_and_decides` | o modelo pode ignorar um achado mesmo após o lembrete (conta como `ignored`) |
 | ↳ Router (faz parte de Agentic Reasoning & Orchestration) | Haiku com JSON schema: intenção, pergunta reescrita e buscas; reescrita com id inventado é recusada | `src/app/router.py` | `tests/test_r53_standalone.py::test_llm_rewrite_with_invented_id_is_rejected_and_falls_back_to_inheritance` | intenção fora dos exemplos do domínio cai no `DEFAULT_INTENT` |
 | Context, Knowledge & RAG | Busca densa nas páginas oficiais com janelas por trecho (a melhor janela pontua o trecho quando casa claramente melhor; o redator recebe o trecho inteiro, com o mesmo id), com o cross-encoder só no portão sem fonte (padrão medido antes do relógio, `KIT_RETRIEVER`); o que a fonte não cobre sai `partial` ou `insufficient` | `src/app/rag.py`, `src/app/agents.py` | `tests/test_agents.py::test_faq_llm_not_in_sources_is_insufficient` | gold de busca escrito pelo time, não pelo cliente |
@@ -261,7 +261,7 @@ duas existe (`tests/test_evidence.py` falha se um sumir).
 | Evaluation & Quality Engineering | Manchete **oficiais resolvidas** (sem humano + todo fato + fonte); juiz LLM com canários; `expect.after_human` mede o plano depois do humano | `evals/run_evals.py`, `evals/judge.py` | `tests/test_e53_resolved.py::test_resolved_needs_no_handoff_every_fact_and_a_source`, `tests/test_r12_after_human.py::test_agent_after_the_answered_escalation_passes` | juiz da mesma família do modelo avaliado |
 | Observability, Reliability & Cost | Log JSON com `trace_id`; US$ e tokens por request, com o **cache de prompt** na conta; `/metrics` com histograma de latência e **alertas Prometheus provisionados** | `src/app/observability.py`, `ops/alerts.yml` | `tests/test_r12_prompt_cache.py::test_cost_counts_the_cache_write_premium_and_the_cheap_read` | custo pela tabela de preços do kit, não pela fatura |
 | Production Engineering | Imagem multi-stage não-root com base fixada por digest, lockfiles, smoke do container e **2 réplicas atrás de balanceador** no CI; overlay de produção endurecido | `Dockerfile`, `docker-compose.hardened.yml` | `tests/test_supply_chain.py::test_hardened_overlay` | com SQLite, réplicas só no mesmo host ([ADR 0002](docs/adr/0002-replicas-mesmo-host.md)) |
-| Engineering Judgment | Cada decisão com a alternativa descartada e o número que decidiu; o considerado e não feito, com a medida | [`docs/adr/`](docs/adr/) | §4 e §9; prompts sem frase de caso de avaliação (`tests/test_router_contamination.py::test_domain_prompts_do_not_copy_eval_questions`) | {{o que foi medido no corpus deste desafio}} |
+| Engineering Judgment | Cada decisão com a alternativa descartada e o número que decidiu; o considerado e não feito, com a medida | [`docs/adr/`](docs/adr/) | §4 e §9; prompts sem frase de caso de avaliação (`tests/test_router_contamination.py::test_domain_prompts_do_not_copy_eval_questions`) | os portões sem fonte foram calibrados no gold deste corpus (bloco de busca no §0); o buscador não foi re-escolhido no relógio |
 
 ## 4. Design choices and trade-offs (decisões)
 
@@ -280,7 +280,7 @@ Cada decisão com a alternativa descartada e o número que a decidiu. Os número
 | SQLite como padrão, **Postgres atrás da mesma interface** para vários hosts ([ADR 0003](docs/adr/0003-postgres-opcional.md)) | Postgres obrigatório / ORM / Redis | zero serviço externo para quem clona e roda; os testes de disputa (caso, ação, resposta, SLA, limite) rodam nos dois backends |
 | Agentes independentes em threads | asyncio | os agentes fazem I/O síncrono (SQLite, SDK); threads cortam o p95 sem reescrever a pilha |
 | Effort por papel (supervisor low, agentes medium) | um effort global | o supervisor só escolhe o próximo passo; quem redige com fonte precisa de mais |
-| {{decisão do desafio}} | {{alternativa}} | {{número}} |
+| **Portão sem fonte pela nota do cross-encoder** (`MIN_RERANK` em `src/app/domain/challenge/__init__.py`) | só o piso de cosseno (`MIN_SCORE`) | na calibração deste corpus o piso de cosseno respondia metade das perguntas em inglês com fonte; o do rerank respondeu todas as com fonte e recusou todas as sem fonte do gold (commit `gate:` no git log; bloco de busca no §0) |
 
 ## 5. How LLM tools were used (como as ferramentas de LLM foram usadas)
 
@@ -288,8 +288,7 @@ Cada decisão com a alternativa descartada e o número que a decidiu. Os número
   agentes Sonnet, juiz Opus ou de outra família (`JUDGE_PROVIDER=openai_compat`). Ferramentas com JSON Schema e
   identidade do servidor (`src/app/tools.py`); saída estruturada no router e no juiz; cache de prompt no system e
   nas tools de cada papel; cassete grava cada resposta do LLM para o replay offline no CI.
-- **Na construção:** {{sessões do Claude Code (o que cada uma fez, sem apelido)}}; {{o que o kit trouxe pronto e o
-  que foi escrito no relógio}}; detalhe em [docs/PROCEDENCIA.md](docs/PROCEDENCIA.md).
+- **Na construção:** uma sessão principal do Claude Code escreveu a SPEC e os casos, integrou e mediu; subagentes em worktrees separados fizeram o corpus (K), o roteamento (R), as tools do CRM (T), os casos e a segurança (Q) e a documentação (D); dois autores cegos escreveram o held-out e um coletor buscou perguntas reais de lojistas com link; dois rotuladores cegos rotularam o gold de busca; uma sessão revisora fora do relógio apontou correções por ramos `maestra/<x>`; o kit trouxe o motor (`src/app/*.py`), o eval, os scripts e a CI; no relógio foi escrito só o domínio (corpus, tools, prompts, regras do router, casos, gold e docs); detalhe em [docs/PROCEDENCIA.md](docs/PROCEDENCIA.md).
 - **Na avaliação:** LLM como juiz com canários e um gabarito de calibração (rótulos escritos a partir da SPEC; humanos
   quando houver rotulagem); rascunho de rótulo pelo modelo com revisão do dono linha a linha
   (`python -m evals.error_analysis`), separado da rotulagem cega.
