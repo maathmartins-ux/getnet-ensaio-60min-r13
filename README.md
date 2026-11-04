@@ -357,8 +357,9 @@ e como comparar pela primeira entrega.
 | 13:38:30 | 25 | eval: fumaça ao vivo dos 10 oficiais (repeat 1, complete, US$ 0,24, intent 10/10) |
 | 13:43:31 | 30 | eval: conferência humana às cegas da fumaça dos oficiais (1 rotulador: 9 respostas julgadas, 1 "não sei"; humano aprova 9/9, checagem automática 9/9, concordância 1,0; sem rodada de consenso) |
 | 14:01:06 | 47 | eval: rodada 1 ao vivo integral (13 splits complete; official resolvidas 30/30 pass^3; juiz; ablação no_needs no split real) + FAILURE_MODES, DEMO e fix-ci |
+| 14:01:30 | 48 | docs: COBERTURA com os textos do domínio |
 
-Relógio: **47 min**, 59 commits (aqui os 8 marcos; todos em `docs/TIMESHEET.md`).
+Relógio: **47 min**, 60 commits (aqui os 9 marcos; todos em `docs/TIMESHEET.md`).
 <!-- timeline:end -->
 
 </details>
