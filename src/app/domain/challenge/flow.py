@@ -50,7 +50,7 @@ _ACTION = re.compile(r"\b(chamado|ticket)\b|\b(antecip\w*|advance)\b.*R\$\s*\d|R
 _TROUBLE = re.compile(
     r"n[aã]o (est[aá] )?(conect\w*|liga|funciona)|parou de conectar|perdeu a conex|sem (sinal|conex[aã]o|internet)"
     r"|offline|travou|travad\w*|\berro\b|recus\w*|negad\w*|won'?t connect|not connecting|no (signal|connection)"
-    r"|lost (its |the )?(internet|connection|signal)|declin\w*|rejected|error|frozen|not working|is down"
+    r"|without (signal|connection|internet)|lost (its |the )?(internet|connection|signal)|declin\w*|rejected|error|frozen|not working|is down"
     r"|\bc[oó]digo \d{2}\b|\bcode \d{2}\b", re.IGNORECASE)
 # Como consertar (lado "o que faço?" de um sintoma).
 _FIX = re.compile(r"\b(resolv\w*|consert\w*|o que (eu )?(fa[cç]o|devo fazer|posso fazer)|passo a passo|fix|steps"
@@ -59,7 +59,7 @@ _FIX = re.compile(r"\b(resolv\w*|consert\w*|o que (eu )?(fa[cç]o|devo fazer|pos
 _SUPPORT = re.compile(
     r"\b(minhas? vendas|vendas minhas|vendi|meus? recebimentos|meu dinheiro|my sales|my money|i sold|ontem|yesterday"
     r"|hoje vendi|deposit\w*|cai o dinheiro|caiu|recebi|receb[ií]veis|agenda|meus? terminais|my terminals?"
-    r"|minhas? maquininhas?|my (card )?machines?|online|funcionando|TX\d+|T\d{4}[A-Z]?)\b", re.IGNORECASE)
+    r"|minhas? maquininhas?|my (card )?machines?|com problema|with (a|the) problem|online|funcionando|TX\d+|T\d{4}[A-Z]?)\b", re.IGNORECASE)
 # Pergunta de produto/regra.
 _KNOWLEDGE = re.compile(
     r"\b(preciso de|do i need|como funciona|how does|posso|can i|quantas parcelas|how many installments|diferen[cç]a"
@@ -68,10 +68,17 @@ _KNOWLEDGE = re.compile(
 _GENERAL = re.compile(r"\b(clima|tempo amanh[aã]|previs[aã]o do tempo|chover|chuva|temperatura|weather|forecast"
                       r"|rain|c[aâ]mbio|cota[cç][aã]o|d[oó]lar|euro|exchange rate|dollar|not[ií]cias?|news)\b",
                       re.IGNORECASE)
+_PRODUCT = re.compile(r"\b(crediário|crediario|pix|link de pagamento|payment link|get conta|antecipa\w*|advance"
+                      r"|parcel\w*|installments?|whatsapp)\b", re.IGNORECASE)
 _STATE = re.compile(r"\b(online|funcionando|working|h[aá] quanto tempo|how long|valor|amount|how much|quanto"
                     r"|por que|why|quando|when)\b", re.IGNORECASE)
 _FOLLOWUP = re.compile(r"\b(ele|ela|isso|esse|essa|a outra|o outro|primeira|segunda|it|that|this one|the other"
                        r"|second|first)\b", re.IGNORECASE)
+
+
+# "sem passar por humano" / "without a human" NÃO é pedido de humano (é pedido de ação sem aprovação).
+_NOT_HUMAN = re.compile(r"\b(sem|without)( passar por| going through)?( um| uma| a| an)? (humano|atendente|human|person"
+                        r"|operador|operator)\b", re.IGNORECASE)
 
 
 def states_subject(text: str) -> bool:
@@ -81,7 +88,7 @@ def states_subject(text: str) -> bool:
 
 def clause_intent(text: str, history: list[dict], r) -> str | None:
     """Intenção de UMA cláusula, na ordem dos desempates da SPEC."""
-    if _HUMAN.search(text):
+    if _HUMAN.search(_NOT_HUMAN.sub(" ", text)):
         return "human_request"
     if _ACTION.search(text):
         return "support"
@@ -93,6 +100,8 @@ def clause_intent(text: str, history: list[dict], r) -> str | None:
     if _TROUBLE.search(text):
         return "troubleshoot"
     if last in ("support", "troubleshoot") and _FIX.search(text):
+        return "troubleshoot"
+    if _FIX.search(text) and not _PRODUCT.search(text):
         return "troubleshoot"
     if _GENERAL.search(text) and not _KNOWLEDGE.search(text):
         return "general"
