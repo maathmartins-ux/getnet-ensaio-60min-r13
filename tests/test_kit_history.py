@@ -4,7 +4,12 @@ import importlib.util
 import re
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parent.parent
+# docs/kit/ fica fora da entrega (o scaffold o tira do índice): na entrega e na CI dela estes testes não têm o que ler
+pytestmark = pytest.mark.skipif(not (ROOT / "docs" / "kit" / "CHANGELOG.md").exists(),
+                                reason="sem docs/kit/ (entrega): o histórico já foi gerado no scaffold")
 spec = importlib.util.spec_from_file_location("kit_history", ROOT / "scripts" / "kit_history.py")
 kh = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(kh)
