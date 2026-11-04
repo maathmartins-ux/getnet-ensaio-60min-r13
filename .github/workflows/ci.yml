@@ -1,7 +1,14 @@
 name: ci
 on:
   push:
+    branches-ignore: ["maestra/**", "fork/**", "probe/**", "dependabot/**"]  # ramos de trabalho: a CI que vale é a do main
   pull_request:
+
+# Um push novo cancela a CI ainda rodando do mesmo ramo: no ensaio 13, 25 execuções (uma por push, 5 jobs cada)
+# encheram a fila e a CI do último commit esperaria a fila inteira, depois do T+58.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 # Só leitura: o gitleaks lista os commits do PR (sem pull-requests: read, 403 "Resource not accessible by
 # integration" no evento pull_request, visto em 01/11/2026).
