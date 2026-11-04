@@ -113,3 +113,52 @@ escalar. Os comandos assumem a API em `localhost:8000` e o Prometheus do perfil 
 - **O que fazer:** volume → aceitar ou baixar o modelo de um papel; laço → conferir `MAX_STEPS` e `MAX_MODEL_CALLS`
   e abrir caso de eval com o trace.
 - **Quando escalar:** acima de US$ 20 por hora, ou custo por turno resolvido acima do dobro do medido no README.
+
+# Operação do domínio Getnet (fora dos alertas)
+
+Procedimentos que não nascem de um alerta, mas aparecem no dia a dia do atendimento a lojistas.
+
+## Subir e conferir
+
+- Subir: `docker compose up` (um comando, NFR-01). Sem chave de LLM o sistema roda offline (router por KNN,
+  supervisor por tabela, redação extrativa).
+- Conferir: `GET /health` (vivo e contagem de dados) e `GET /ready` (503 com o motivo: índice, banco, LLM,
+  orçamento). Os 10 cenários do enunciado: `python scripts/official_check.py`.
+
+## Atualizar a base de conhecimento (site da Getnet mudou: tarifa, prazo, produto)
+
+- **Como:** editar `data/sources.json` (só hosts em `allowed_hosts` são baixados) e rodar `python -m app.ingest`
+  (ou `--group <nome>`); os trechos vão para `data/knowledge/<grupo>/`. O índice recarrega sozinho quando um
+  `.jsonl` muda (`rag.get_index`).
+- **Como confirmar:** `python scripts/official_check.py` e o split `retrieval` de `evals/`; uma pergunta que antes
+  respondia e agora volta `insufficient` indica página perdida na ingestão.
+- **Quando escalar:** contador `poisoned_docs_dropped_total` subindo depois de uma ingestão (página com instrução
+  embutida): revisar a fonte antes de publicar.
+
+## Lojista diz "minha maquininha não conecta" e o sistema não ajudou
+
+- **Como confirmar:** pelo `trace_id` da resposta, ver no log se `get_terminals` rodou (span `tool`) e se o achado
+  `needs` agendou o Knowledge (span `agent` do `faq` depois do `records`).
+- **O que fazer:** tool não rodou → intent errada (router: rever `data/intent_examples.jsonl` e os desempates em
+  `src/app/domain/challenge/flow.py`); `faq` voltou `insufficient` → manual de conexão ausente da base (seção
+  anterior).
+- **Quando escalar:** o terminal segue offline depois dos passos do manual: chamado técnico por
+  `open_support_ticket` (pede confirmação do lojista).
+
+## Pedido de antecipação parado
+
+- **O que significa:** `request_receivables_advance` é escrita de risco alto e fica `pending_action` até um humano
+  aprovar (`POST /actions/{id}/approve` ou `/reject`); o lojista não consegue aprovar a própria antecipação pelo chat.
+- **Como confirmar:** `GET /audit` lista a ação pendente e quem decidiu.
+- **Quando escalar:** pendente além do SLA da fila: `POST /handoffs/sla-check` e o alerta `SLAVencido`.
+
+## Fila humana
+
+- Operador vê e responde em `/operator` (ou Telegram, `src/app/notify.py`); `GET /handoffs` lista os casos.
+- Espera síncrona: `HITL_SYNC_WAIT_S` (padrão 0 no processo, definido no `docker-compose.yml`). Resposta no prazo
+  continua o plano no mesmo turno; fora do prazo, `resume_after_human` leva a resposta à conversa depois.
+
+## Lojista pede para apagar os dados (LGPD)
+
+- O titular apaga pelo próprio token: `DELETE /me/conversations/{id}`; o operador aplica a retenção com
+  `POST /admin/retention/purge`. O contador `privacy_deletions_total` registra.
