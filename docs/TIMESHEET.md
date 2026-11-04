@@ -1,6 +1,6 @@
 # Linha do tempo (gerada do `git log`)
 
-Relógio: **47 min** de 04/11/2026 13:13:44 a 14:01:06 (tag clock-start à tag clock-end; horário do commit, fuso UTC). 47 commits dentro do relógio, 1 depois e 1 antes (declarados abaixo).
+Relógio: **47 min** de 04/11/2026 13:13:44 a 14:01:06 (tag clock-start à tag clock-end; horário do commit, fuso UTC). 47 commits dentro do relógio, 3 depois e 1 antes (declarados abaixo).
 Maior rajada: 27 commits em até 10 min a partir de 13:19:50.
 
 | min | hora | autor | arquivos | commit | relógio |
@@ -54,6 +54,8 @@ Maior rajada: 27 commits em até 10 min a partir de 13:19:50.
 | 38.0 | 13:51:46 | Claude | 1 | `391e367` ci: push novo cancela a CI em curso do mesmo ramo; ramos de trabalho sem CI de push (fila  | dentro |
 | 47.4 | 14:01:06 | Claude | 35 | `5dbae01` eval: rodada 1 ao vivo integral (13 splits complete; official resolvidas 30/30 pass^3; jui | dentro |
 | 47.8 | 14:01:30 | Claude | 4 | `69cac6f` docs: COBERTURA com os textos do domínio | pós-relógio |
+| 47.8 | 14:01:32 | Claude | 3 | `1a36d7f` readme: números e linha do tempo (fill_readme, último passo) | pós-relógio |
+| 50.7 | 14:04:25 | Claude | 1 | `faf9e16` fix: teste do modelo do README só no kit (na entrega o make final escreve a frase do últim | pós-relógio |
 
 Commits antes do relógio: anteriores ao início (o repositório antes do scaffold); não contam no tempo declarado.
 
