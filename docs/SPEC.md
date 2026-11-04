@@ -1,30 +1,98 @@
-# Spec — {{NOME}}
+# Spec — Getnet Multi-Agent Support System
 
-Commitada antes de qualquer código. Congelada (OWNERSHIP.json): mudança aqui é decisão da sessão principal.
+Commitada antes de qualquer código do domínio. Congelada (OWNERSHIP.json): mudança aqui é decisão da sessão principal.
 
 ## Problema
-{{2–3 frases a partir do enunciado, sem parafrasear demais.}}
+Lojistas da Getnet escrevem em português ou inglês sobre produtos (maquininhas, Pix, Link de Pagamento, crediário,
+antecipação, Get Conta), sobre os próprios dados (vendas, recebimentos, terminais, recusas) e sobre assuntos gerais
+(clima, câmbio). Um Router decide qual agente (ou sequência) atende; o Knowledge responde com RAG sobre o site oficial;
+o Customer Support lê o dado do cliente por tools; um agente geral usa tools de dado ao vivo; um humano entra quando o
+sistema não resolve com confiança.
 
 ## Requisitos
 
 | ID | Requisito (do enunciado) | Módulo | Teste / eval |
 |---|---|---|---|
-| FR-01 | {{...}} | `src/app/...` | `tests/...` |
+| FR-01 | Router: entrada única, decide agente ou sequência | `src/app/router.py`, `src/app/domain/challenge/flow.py` | `tests/test_domain_router.py`, split `official`/`replan` |
+| FR-02 | Knowledge: RAG sobre o site da Getnet + busca web para o geral | `src/app/rag.py`, `data/sources.json` | `scripts/official_check.py`, `evals/retrieval.d/` |
+| FR-03 | Customer Support com ≥ 2 tools que leem o dado do cliente | `src/app/domain/challenge/tools.py` | `tests/test_tools.py` |
+| FR-04 | `POST /chat` com `{message, user_id}` → JSON | `src/app/api.py` | `tests/test_domain_http.py` |
+| FR-05 | 4º agente: escalonamento humano (fila, operador, retomada do plano) | `src/app/hitl_sync.py` | split `hitl` |
+| FR-06 | Guardrails (inseguro, irrelevante, sensível, sem suporte) | `src/app/guardrails.py` | split `guardrail` |
 | NFR-01 | Sobe com um comando (Docker) | `Dockerfile` | `scripts/check.py --docker` |
 | NFR-02 | Funciona sem chave de LLM (modo offline) | `config.py` | CI |
-| NFR-03 | Identidade: `AUTH_MODE` {{demo ou required}} (ADR 0001) | `api.py` | `tests/test_auth_modes.py` |
-| NFR-03 | Identidade: `AUTH_MODE` {{demo ou required}} (ADR 0001) | `api.py` | `tests/test_auth_modes.py` |
+| NFR-03 | Identidade: `AUTH_MODE` required em produção; demo só no compose de demonstração (ADR 0001) | `api.py` | `tests/test_auth_modes.py` |
 
 ## Cenários de aceite (copiados do enunciado, um por linha)
 
-| ID | Mensagem | Esperado (intent / rota / ferramenta / handoff) |
-|---|---|---|
-| AC-01 | {{...}} | {{...}} |
+Todos em inglês: a resposta sai em inglês. `facts` = regex sem caixa (uma por fato de referência) em
+`evals/cases.jsonl`, escritas antes do código; `entities` = produtos citados.
 
-Cada AC vira um caso `official-NN` em `evals/cases.jsonl`.
+| ID | Mensagem | Intent / agentes / tools | Handoff | Fatos de referência (resumo) | Entidades |
+|---|---|---|---|---|---|
+| official-01 | What's the difference between the Get Clássica and the Get Smart? | knowledge / faq | não | um recurso da Get Smart (gestão, apps, nota fiscal) e um da Get Clássica (impressora, chip/wi-fi, preço) | Get Clássica, Get Smart |
+| official-02 | What's the weather forecast in Porto Alegre tomorrow? | general / `weather_forecast` | não | temperatura em °C | — |
+| official-03 | When will the money from yesterday's sales be deposited? | support / records / `get_settlements` | não | valores em R$ do CRM e datas de depósito por modalidade (Pix D+0, débito D+1 útil, crédito D+30) | — |
+| official-04 | Do I need a bank account to receive my sales via Pix? | knowledge / faq | não | Get Conta / conta de pagamento | Pix |
+| official-05 | My card machine won't connect to the internet, what should I do? | troubleshoot / records (`get_terminals`) → faq pelo achado `needs` | não | qual terminal está offline (do CRM) + passo do manual (chip, wi-fi, reiniciar) | — |
+| official-06 | How does receivables advance (antecipação) work with Getnet? | knowledge / faq | não | taxa/custo e modalidade (automática ou pontual) | Antecipação |
+| official-07 | What's the euro exchange rate today? | general / `currency_rate` | não | valor em R$ e fonte PTAX/Banco Central | — |
+| official-08 | My card machine is showing a transaction decline error. | troubleshoot / records (`get_transactions`) → faq pelo achado | não | códigos 51/05 e significado (saldo, emissor) calculados pela tool | — |
+| official-09 | How many installments can I split a sale into with the crediário? | knowledge / faq | não | até 48 parcelas | Crediário |
+| official-10 | Can I sell through WhatsApp using the Payment Link? | knowledge / faq | não | outros canais do link (redes sociais, e-mail, SMS) | Link de Pagamento |
+
+Cada AC vira um caso `official-NN` em `evals/cases.jsonl`. Nenhum dos 10 escala quando a fonte tem o fato.
+
+## Taxonomia de intenções
+
+| Intent | Plano | Quando |
+|---|---|---|
+| `knowledge` | `["faq"]` | produto, taxa, prazo, regra, funcionamento da Getnet (o "como funciona", "preciso de...?") |
+| `support` | `["records"]` | dado do próprio cliente: vendas, recebimentos, agenda, terminais, status de chamado |
+| `troubleshoot` | `["records"]` (+ `faq` pelo achado `needs`) | sintoma de máquina/transação: "não conecta", "erro", "recusada" |
+| `general` | `["general"]` | clima, câmbio, assunto geral com dado ao vivo (tools `weather_forecast`, `currency_rate`, `web_search`) |
+| `multi` | partes em paralelo | duas perguntas de assuntos diferentes no mesmo turno (ex.: produto + dado da conta, ou câmbio + produto) |
+| `human_request` | `["escalation"]` | o cliente pede pessoa/atendente |
+| `blocked` | — | injeção, jailbreak, dado de outro cliente, fraude/lavagem, abuso |
+
+## Desempates (o router aplica nesta ordem)
+1. Pedido explícito de humano → `human_request` (mesmo junto de outra pergunta: a outra parte roda e o humano entra).
+2. Ataque/abuso/fraude → `blocked`.
+3. Sintoma de máquina ou transação (não conecta, erro, recusa, travou) → `troubleshoot`, mesmo com "o que fazer?".
+4. Dado do próprio cliente (minhas vendas, meu dinheiro, meu terminal, ontem, quanto) → `support`.
+5. "Preciso de / como funciona / posso / quantas parcelas" sobre produto → `knowledge`.
+6. Duas perguntas sobre o MESMO produto = `knowledge` (não multi).
+7. Clima, câmbio, notícia → `general`; pergunta sobre a própria Getnet nunca é `general`.
+8. Seguimento curto ("e a outra?", "and how much?") herda a entidade da última resposta; se pergunta ESTADO/DADO de
+   terminal ou transação ("está online?", "há quanto tempo?", "e o outro?"), é `support` mesmo depois de troubleshoot.
+
+## Resposta parcial
+O Knowledge tem três estados: `ok`, `partial` (responde o que a fonte cobre e diz o que falta; NÃO escala por si),
+`insufficient` (nada coberto → oferece humano). Parcial aceitável nos oficiais: official-01 se faltar um recurso
+de um dos lados (responde o que tem dos dois); official-06 se a taxa exata não estiver na fonte (explica as
+modalidades e diz que a taxa depende da negociação). `expect.handoff: false` em todos os oficiais.
+
+## Pergunta autônoma (`standalone`)
+O router reescreve cada seguimento como pergunta completa e autônoma, no idioma do cliente, em `ctx.facts["standalone"]`
+("e a outra?" depois da Get Smart → "Quanto custa a Get Clássica?"); vazia se não der para reescrever sem inventar.
+O Knowledge busca com ela. Casos `memory` trazem `standalone` e `expects_fact`.
+
+## Tools do Customer Support (nomes congelados)
+
+| Tool | Tipo | Devolve |
+|---|---|---|
+| `get_transactions(period)` | leitura | vendas e recusas do cliente (código e significado da recusa calculados), totais |
+| `get_settlements(period)` | leitura | agenda de recebimentos por modalidade, datas calculadas (Pix D+0, débito D+1 útil, crédito D+30), totais |
+| `get_terminals()` | leitura | terminais do cliente, status, conexão, sinal, `offline_for_hours` só se offline; emite `needs` → faq |
+| `open_support_ticket(terminal_id, reason)` | escrita, confirmação | chamado técnico |
+| `request_receivables_advance(amount)` | escrita, `risk: high`, aprovação humana | pedido de antecipação |
+
+Identidade sempre do servidor (nunca no schema). Registro de outro cliente = "não encontrado" (indistinguível).
+`period` com enum `today|yesterday|last_7_days|last_30_days` e padrão `last_7_days`.
 
 ## Fora de escopo
-- {{...}}
+- Pagamento real, alteração cadastral, contestação de chargeback por API (vai ao humano).
+- Recomendação financeira personalizada.
 
 ## Divisão em forks
 
