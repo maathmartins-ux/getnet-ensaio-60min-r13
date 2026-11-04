@@ -44,7 +44,10 @@ DISAMBIGUATION = {
 _HUMAN = re.compile(r"\b(atendente|humano|pessoa|falar com algu[eé]m|human|representative|real person|a person"
                     r"|operador|operator)\b", re.IGNORECASE)
 # Ação sobre a conta (escrita): chamado técnico, pedido de antecipação com valor.
-_ACTION = re.compile(r"\b(chamado|ticket)\b|\b(antecip\w*|advance)\b.*R\$\s*\d|R\$\s*[\d.,]+.*\b(antecip\w*|advance)",
+_ACTION = re.compile(r"\b(chamado|ticket)\b|\b(troc\w*|alter\w*|mud\w*|change|update)\b.*\b(cnpj|conta banc\w*"
+                     r"|bank account|domic\w*)|\b(pagar|pague|pay)\b.*\bboleto"
+                     r"|\b(show|list|mostr\w*|list\w*)\b.*\b(terminais|terminals)\b"
+                     r"|\b(antecip\w*|advance)\b.*R\$\s*\d|R\$\s*[\d.,]+.*\b(antecip\w*|advance)",
                      re.IGNORECASE)
 # Sintoma de máquina ou transação.
 _TROUBLE = re.compile(
@@ -66,12 +69,15 @@ _SUPPORT = re.compile(
 _KNOWLEDGE = re.compile(
     r"\b(preciso de|do i need|como funciona|how does|posso|can i|quantas parcelas|how many installments|diferen[cç]a"
     r"|difference|taxa|custo|cost|juros|interest|parcel\w*|installments?|crediário|crediario|pix|link de pagamento"
-    r"|payment link|get conta|get smart|get cl[aá]ssica|get mini|antecipa\w*|advance|whatsapp)\b", re.IGNORECASE)
-_GENERAL = re.compile(r"\b(clima|tempo amanh[aã]|previs[aã]o do tempo|chover|chuva|temperatura|weather|forecast"
+    r"|receivables earlier|receber antes|payment link|get conta|get smart|get cl[aá]ssica|get mini|antecipa\w*"
+    r"|advance|whatsapp)\b", re.IGNORECASE)
+_GENERAL = re.compile(r"\b(frio|calor|temperature|outlook|previs[aã]o|clima|tempo amanh[aã]"
+                      r"|previs[aã]o do tempo|chover|chuva|temperatura|weather|forecast"
                       r"|rain|c[aâ]mbio|cota[cç][aã]o|d[oó]lar|euro|exchange rate|dollar|not[ií]cias?|news)\b",
                       re.IGNORECASE)
 _PRODUCT = re.compile(r"\b(crediário|crediario|pix|link de pagamento|payment link|get conta|antecipa\w*|advance"
-                      r"|parcel\w*|installments?|whatsapp)\b", re.IGNORECASE)
+                      r"|parcel\w*|installments?|whatsapp|receivables earlier|receber antes)\b", re.IGNORECASE)
+_DURATION = re.compile(r"\b(h[aá] quanto tempo|how long|been down|fora do ar desde)\b", re.IGNORECASE)
 _STATE = re.compile(r"\b(online|funcionando|working|h[aá] quanto tempo|how long|valor|amount|how much|quanto"
                     r"|por que|why|quando|when)\b", re.IGNORECASE)
 _FOLLOWUP = re.compile(r"\b(ele|ela|isso|esse|essa|a outra|o outro|primeira|segunda|it|that|this one|the other"
@@ -79,8 +85,16 @@ _FOLLOWUP = re.compile(r"\b(ele|ela|isso|esse|essa|a outra|o outro|primeira|segu
 
 
 # "sem passar por humano" / "without a human" NÃO é pedido de humano (é pedido de ação sem aprovação).
-_NOT_HUMAN = re.compile(r"\b(sem|without)( passar por| going through)?( um| uma| a| an)? (humano|atendente|human|person"
-                        r"|operador|operator)\b", re.IGNORECASE)
+_NOT_HUMAN = re.compile(r"\b((sem|without)( passar por| going through)?|n[aã]o precis\w*( de)?|skip(ping)?( the)?"
+                        r"|no need (for|of)( a)?|no)( um| uma| a| an)? (humano|atendente|human|person|operador"
+                        r"|operator)( review| approval)?\b", re.IGNORECASE)
+_COMPARE = re.compile(r"\b(versus|vs\.?|compar\w*|diferen[cç]\w*|difference|sets? \w+ apart|o que diferencia)\b",
+                      re.IGNORECASE)
+_CURRENCY = re.compile(r"\b(quantos reais|how many reais|em reais|in reais)\b"
+                       r".*\b(euro|d[oó]lar|dollar|libra|pound|peso|iene"
+                       r"|yen)|\b(euro|d[oó]lar|dollar|libra|pound)\b.*\b(em reais|in reais)\b", re.IGNORECASE)
+_MARKET = re.compile(r"\b(a[cç][oõ]es da bolsa|bolsa de valores|stock market|stocks?|investir em a[cç][aã]o"
+                     r"|invest\w* in)\b", re.IGNORECASE)
 
 
 def states_subject(text: str) -> bool:
@@ -94,10 +108,16 @@ def clause_intent(text: str, history: list[dict], r) -> str | None:
         return "human_request"
     if _ACTION.search(text):
         return "support"
+    if _CURRENCY.search(text) or (_MARKET.search(text) and not re.search(OWN_COMPANY, text, re.IGNORECASE)):
+        return "general"
+    if _COMPARE.search(text) and not _TROUBLE.search(text):
+        return "knowledge"
     last = r.topic_intent(history)
     # Seguimento sobre ESTADO/DADO de terminal ou transação → support, mesmo depois de troubleshoot.
     if last in ("support", "troubleshoot") and _FOLLOWUP.search(text) and _STATE.search(text) \
             and not _FIX.search(text):
+        return "support"
+    if _DURATION.search(text) and not _TROUBLE.search(text):
         return "support"
     if _TROUBLE.search(text):
         return "troubleshoot"
@@ -118,6 +138,10 @@ def clause_intent(text: str, history: list[dict], r) -> str | None:
         return "troubleshoot"
     if last in ("support", "troubleshoot") and _FOLLOWUP.search(text):
         return "support"
+    if re.match(r"\s*\d{3}(,\d{2})?\b", text):  # resto de um valor partido na vírgula ("R$ 2.000,00")
+        return None
+    if _NOT_HUMAN.search(text):  # "sem humano" sozinho não é pergunta: a outra cláusula decide
+        return None
     if (near := r.knn_intent(text)) is not None:
         return near
     return DEFAULT_INTENT if r.has_subject(text) else None
