@@ -60,7 +60,8 @@ _FIX = re.compile(r"\b(resolv\w*|consert\w*|o que (eu )?(fa[cç]o|devo fazer|pos
 _SUPPORT = re.compile(
     r"\b(minhas? vendas|vendas minhas|vendi|meus? recebimentos|meu dinheiro|my sales|my money|i sold|ontem|yesterday"
     r"|hoje vendi|deposit\w*|cai o dinheiro|caiu|recebi|receb[ií]veis|agenda|meus? terminais|my terminals?"
-    r"|minhas? maquininhas?|my (card )?machines?|com problema|with (a|the) problem|online|funcionando|TX\d+|T\d{4}[A-Z]?)\b", re.IGNORECASE)
+    r"|minhas? maquininhas?|my (card )?machines?|com problema|with (a|the) problem"
+    r"|online|funcionando|TX\d+|T\d{4}[A-Z]?)\b", re.IGNORECASE)
 # Pergunta de produto/regra.
 _KNOWLEDGE = re.compile(
     r"\b(preciso de|do i need|como funciona|how does|posso|can i|quantas parcelas|how many installments|diferen[cç]a"
